@@ -11,8 +11,8 @@
     </head>
     <body>
         <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap">
-            <a class="col-sm-3 mr-0" href="#">Home</a>
-            <li class="nav-item text-nowrap">
+            <a class="col-sm-3 mr-0" href="<?=base_url();?>">Home</a>
+            <li class="nav-item text-nowrap text-white">
                 Twitter Positivity Search
             </li>
         </nav>

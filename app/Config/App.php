@@ -21,7 +21,7 @@ class App extends BaseConfig
 	| environments.
 	|
 	*/
-	public $baseURL = 'http://localhost:8080/';
+	public $baseURL = 'http://localhost/adjectivesApp';
 
 	/*
 	|--------------------------------------------------------------------------
@@ -243,7 +243,7 @@ class App extends BaseConfig
 	| CSRFRegenerate  = Regenerate token on every submission
 	| CSRFRedirect    = Redirect to previous page with error on failure
 	*/
-	public $CSRFTokenName  = 'csrf_test_name';
+	public $CSRFTokenName  = 'csrf_tok';
 	public $CSRFHeaderName = 'X-CSRF-TOKEN';
 	public $CSRFCookieName = 'csrf_cookie_name';
 	public $CSRFExpire     = 7200;
