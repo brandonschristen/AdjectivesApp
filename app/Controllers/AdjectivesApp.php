@@ -17,8 +17,11 @@ class AdjectivesApp extends BaseController
 		$AdjectivesModel = new AdjectivesModel();
 		$term = $this->request->getPost('term');
 		$result = $AdjectivesModel->search($term);
-		echo"<pre>";print_r($result);echo"</pre>";
-		return;
+		if($result)
+		{
+			$this->data["view"] = "results";
+			return view('/template/main_template',$this->data);			
+		}
 	}
 	//--------------------------------------------------------------------
 
