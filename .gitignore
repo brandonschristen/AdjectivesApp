@@ -126,4 +126,4 @@ nb-configuration.xml
 /.phpunit.*.cache
 
 #config
-/config/Database.php
+
