@@ -12,19 +12,18 @@ class AdjectivesModel extends Model
     public function __construct()
     {
         try{
+            $this->db = \Config\Database::connect();
             $this->positiveWords = $this->getAdjectives(1);
             $this->negativeWords = $this->getAdjectives(-1);
         }
         catch(\Exception $e)
         {
             echo($e->getMessage());
-            return 0;
+            return false;
         }
     }
     public function search($term)
     {
-        //keeps track of the times word was used
-        $wordcount = 0;
         //keeps key value pair of positive words and times used
         $poswordArray = array();
         //keeps key value pair of positive words and times used
@@ -42,7 +41,7 @@ class AdjectivesModel extends Model
         {
             //init keys
             $negwordArray[$negword] = 0;
-        }        
+        }
         try
         {
             $result = $this->searchAPI($term);
@@ -58,14 +57,22 @@ class AdjectivesModel extends Model
                     $negwordArray[$negword] += substr_count($row["text"],$negword);
                 }                                  
             }
-            sort($poswordArray);
-            sort($negwordArray);
+            //asort to put words with highest usage at the top
+            asort($poswordArray);
+            asort($negwordArray);
+
             //output results to array and retun it
+            //if the first in our sorted is 0 the rest are too.. we found no results
+            if(array_key_first($poswordArray) ==0 || array_key_first($negwordArray) ==0)
+            {
+                throw new \Exception('No matches in our database for that search term.');
+            }
+            return false;
         }            
         catch(\Exception $e)
         {
             echo($e->getMessage());
-            return 0;
+            return false;
         }
 
     }
@@ -73,15 +80,27 @@ class AdjectivesModel extends Model
     private function searchAPI($term)
     {
 
-        $curl = curl_init();
+        $certificate_location = getenv('pem_location');
+        $curl = curl_init();    
         // set url
-        curl_setopt($curl, CURLOPT_URL, "https://api.twitter.com/2/tweets/search/recent");
+        curl_setopt($curl, CURLOPT_URL, "https://api.twitter.com/2/tweets/search/recent?query=" . urlencode($term));
         //return the transfer as a string
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+             getenv('twitterAPIKey')
+        ));
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, $certificate_location);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $certificate_location);        
         // turn output into an array
-        $output = json_decode(curl_exec($curl));
-        curl_close($curl);   
-        if($output != "" && !isNull($output))
+        $output = json_decode(curl_exec($curl),true);
+        if(curl_errno($curl)){
+            echo 'Curl error: ' . curl_error($curl);
+            die();
+        }            
+        curl_close($curl);       
+        if($output != "" && $output !== null)
         {
             return $output;
         }
@@ -98,25 +117,18 @@ class AdjectivesModel extends Model
     private function getAdjectives($posOrNeg)
     {
         $wordArray = array();
-        if($res = $this->db->query("SELECT adj_word FROM adjectives WHERE adj_rating = ?"))
+        if($res = $this->db->query("SELECT adj_word FROM adjectives WHERE adj_positive = ?",[$posOrNeg]))
         {
             foreach ($res->getResult() as $row)
             {
                 $wordArray[] = $row->adj_word;
-            }
-            if($posOrNeg == 1)
-            {
-                $this->positiveWords = $wordArray;
-            }
-            else{
-                $this->negativeWords = $wordArray;
-            }            
+            }           
         }
         else{
             //error
             throw new \Exception('Unable to retrieve adjectives');
         }
-        return;
+        return $wordArray;
         
     }
 }

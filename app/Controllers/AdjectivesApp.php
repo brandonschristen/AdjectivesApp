@@ -9,6 +9,8 @@ class AdjectivesApp extends BaseController
 	public function index()
 	{
 		$this->data["view"] = "homepage";
+		//use to load any js files we need  in footer.php
+		$this->data["scripts"][] = "homepage.js";
 		return view('/template/main_template',$this->data);
 	}
 
