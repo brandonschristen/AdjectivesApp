@@ -57,17 +57,34 @@ class AdjectivesModel extends Model
                     $negwordArray[$negword] += substr_count($row["text"],$negword);
                 }                                  
             }
-            //asort to put words with highest usage at the top
-            asort($poswordArray);
-            asort($negwordArray);
-
-            //output results to array and retun it
+            //arsort to put words with highest usage at the top      
+            arsort($poswordArray,SORT_NUMERIC);
+            arsort($negwordArray,SORT_NUMERIC);
             //if the first in our sorted is 0 the rest are too.. we found no results
             if(array_key_first($poswordArray) ==0 || array_key_first($negwordArray) ==0)
             {
                 throw new \Exception('No matches in our database for that search term.');
             }
-            return false;
+            else{
+                //output results to array and retun it
+                $resultArray = array(
+                    "pos" => array(
+                        $poswordArray[0],
+                        $poswordArray[1],
+                        $poswordArray[2],
+                        $poswordArray[3],
+                        $poswordArray[4]
+                    ),
+                    "neg" => array(
+                        $negwordArray[0],
+                        $negwordArray[1],
+                        $negwordArray[2],
+                        $negwordArray[3],
+                        $negwordArray[4]                        
+                    )               
+                );
+                return $resultArray;
+            }
         }            
         catch(\Exception $e)
         {
@@ -100,9 +117,10 @@ class AdjectivesModel extends Model
             die();
         }            
         curl_close($curl);       
-        if($output != "" && $output !== null)
+        if($output != "" && $output !== null && array_key_exists("data",$output))
         {
-            return $output;
+            //data contains all of the tweets, so just send this.
+            return $output["data"];
         }
         else{
             throw new \Exception('Output not received from search API');
